@@ -2,41 +2,28 @@ import { Container, H5 } from 'cherry-components';
 import { theme } from '../../../assets/style/theme';
 import Button from '../../elements/button/Button';
 import { detailContactStyle } from './index.style';
-// import { UserLogo } from '../../../assets/icons/UserLogo';
-import { UserCircleIcon, ArrowSmallLeftIcon } from '@heroicons/react/24/solid';
-import { useNavigate } from 'react-router-dom';
+import { UserCircleIcon, ArrowSmallLeftIcon, TrashIcon } from '@heroicons/react/24/solid';
+import { useNavigate, useParams } from 'react-router-dom';
+import Skeleton from 'react-loading-skeleton';
 
 // graphql lib
-// import { gql, useQuery } from '@apollo/client';
-
-// check error on apollo, its so bad btw :(
-
-// import { loadErrorMessages, loadDevMessages } from "@apollo/client/dev";
-
-// if (process.env.NODE_ENV !== "production") {
-// 	loadErrorMessages();
-// 	loadDevMessages();
-// }
-
-// const GET_CONTACT_DETAIL = gql`
-//   query GetContactDetail($id: Int!) {
-//     contact_by_pk(id: $id) {
-//       last_name
-//       id
-//       first_name
-//       created_at
-//       phones {
-//         number
-//       }
-//     }
-//   }
-// `;
+import { useQuery } from '@apollo/client';
+import { GET_CONTACT_DETAIL } from '../../../graphql/query';
 
 const DetailContact = () => {
   const navigate = useNavigate();
+  const params = useParams();
+
+  const { data, loading } = useQuery(GET_CONTACT_DETAIL, {
+    variables: {
+      id: params.id,
+    },
+  });
+
+  const userData = data ? data.contact_by_pk : [];
 
   return (
-    <Container>
+    <Container css={{ position: 'relative', height: '93vh' }}>
       <div css={detailContactStyle.top}>
         <ArrowSmallLeftIcon
           css={{ width: '1.5rem', height: '1.5rem' }}
@@ -49,21 +36,41 @@ const DetailContact = () => {
         </Button>
       </div>
       <div css={detailContactStyle.user.header}>
-        <div>
-          <UserCircleIcon css={{ width: '7.25rem', height: '7.25rem' }} />
-          <h1>Nama User</h1>
-        </div>
+        {loading ? (
+          <Skeleton count={2} />
+        ) : (
+          <div>
+            <UserCircleIcon css={{ width: '7.25rem', height: '7.25rem' }} />
+            <h1>
+              {userData.first_name} {userData.last_name}
+            </h1>
+          </div>
+        )}
       </div>
 
       <div>
-        <ul>
-          <li>
-            <h3>Primary number</h3>
-          </li>
-          <li>
-            <h3>Additional number</h3>
-          </li>
-        </ul>
+        {loading ? (
+          <Skeleton count={2} />
+        ) : (
+          <div>
+            {userData.phones.map((item: any, index: number) => {
+              return (
+                <div key={index} css={{ display: 'flex', flexDirection: 'column' }}>
+                  <label htmlFor={`phoneNumber${index}`}>Phone Number {index + 1}</label>
+                  <input type="text" id={`phoneNumber${index}`} value={item.number} />
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+      <div css={detailContactStyle.bottom.wrapper}>
+        <Button border="none" width="100%" height="3rem" color={theme.colors.error} radius="15px">
+          <div css={detailContactStyle.bottom.child}>
+            <h2>Delete</h2>
+            <TrashIcon css={{ height: '2rem', width: '2rem' }} />
+          </div>
+        </Button>
       </div>
     </Container>
   );

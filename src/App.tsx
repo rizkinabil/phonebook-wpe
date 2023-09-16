@@ -3,6 +3,8 @@ import LandingPage from './components/pages/landingPage';
 import DetailContact from './components/pages/detailContact';
 import AddContactPage from './components/pages/addContact';
 
+import 'react-loading-skeleton/dist/skeleton.css';
+
 const router = createBrowserRouter([
   {
     path: '/',

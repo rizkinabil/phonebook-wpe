@@ -13,7 +13,7 @@ import Modal from '../../elements/modal/Modal';
 import { loadFromLocalStorage, saveToLocalStorage } from '../../../utils/localStorage';
 
 type Props = {
-  onClose: () => void;
+  onClose?: () => void;
 };
 
 const AddContact = ({ onClose }: Props) => {
@@ -64,6 +64,10 @@ const AddContact = ({ onClose }: Props) => {
     }
   };
 
+  const handleClose = () => {
+    onClose?.();
+  };
+
   const handlePhoneNumberChange = (index: any, value: any) => {
     const updatedPhoneNumber = [...phoneNumberInput];
     updatedPhoneNumber[index] = value;
@@ -81,7 +85,7 @@ const AddContact = ({ onClose }: Props) => {
   };
 
   return (
-    <Modal onClose={onClose}>
+    <Modal onClose={handleClose}>
       <div css={formContactStyle.parent}>
         <div css={formContactStyle.user.header}>
           <UserCircleIcon css={{ width: '7.25rem', height: '7.25rem' }} />

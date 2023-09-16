@@ -135,14 +135,7 @@ const LandingPage = () => {
           border="solid 1px blue"
           onClick={handleOpen}
         />
-        {open && (
-          <AddContact onClose={handleClose} />
-          // <Modal onClose={handleClose}>
-          //   <div>
-          //     <AddContact />
-          //   </div>
-          // </Modal>
-        )}
+        {open && <AddContact onClose={handleClose} />}
       </div>
     </Layout>
   );
