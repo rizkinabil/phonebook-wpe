@@ -1,24 +1,21 @@
 import { css } from '@emotion/react';
 import { Breakpoints, mq } from '../../assets/style/mq';
+import { theme } from '../../assets/style/theme';
 
 const listStyle = {
   wrapper: css({
     marginTop: '1rem',
-    maxHeight: '17rem',
+    height: '20rem',
     overflowY: 'scroll',
-
-    [mq(Breakpoints.md)]: {
-      maxHeight: '10rem',
-    },
+    scrollbarColor: `${theme.colors.grayLight}`,
 
     [mq(Breakpoints.lg)]: {
-      maxHeight: '14.5rem',
+      height: '14.5rem',
     },
   }),
   elementList: css({
     display: 'grid',
     gridColumn: '1',
-    marginBottom: '0.75rem',
   }),
   topSection: css({
     position: 'relative',
@@ -33,7 +30,8 @@ const listStyle = {
   }),
   pagination: css({
     textAlign: 'center',
-    marginTop: '1rem',
+    bottom: '0',
+    margin: '1rem auto',
   }),
 };
 

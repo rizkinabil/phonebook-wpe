@@ -10,6 +10,8 @@ import { GET_CONTACT_QUERY } from '../../../graphql/query';
 
 import AddContact from '../addContact';
 import { loadFromLocalStorage, saveToLocalStorage } from '../../../utils/localStorage';
+import Skeleton from 'react-loading-skeleton';
+// import { updateContactData } from '../../../utils/graphql';
 
 interface IContact {
   id: string;
@@ -105,13 +107,21 @@ const LandingPage = () => {
   }, [data]);
 
   const sortedData = normalContacts ? sortContacts(normalContacts, favorite, currentPage, normalItemPerPage) : [];
+  // const consumedData = updateContactData(sortedData);
 
   return (
     <Layout>
       <div css={homePageStyle.hero}>Find your beloved one from this PhoneBook</div>
       <div>
         {loading ? (
-          <p>Loading...</p>
+          <div>
+            <h3>
+              <Skeleton />
+            </h3>
+            <div>
+              <Skeleton count={10} height={'60px'} borderRadius={'15px'} />
+            </div>
+          </div>
         ) : (
           <List
             datas={sortedData}

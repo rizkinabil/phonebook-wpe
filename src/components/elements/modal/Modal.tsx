@@ -1,12 +1,13 @@
 import { useEffect } from 'react';
 import { css } from '@emotion/react';
+import { XCircleIcon } from '@heroicons/react/24/solid';
 import styled from '@emotion/styled';
 
 const modalStyles = css`
   background-color: white;
   padding: 20px;
   border-radius: 8px;
-  box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: 2px 1px 8px rgba(0, 0, 0, 0.1);
 `;
 
 const ModalContainer = styled.div`
@@ -15,7 +16,6 @@ const ModalContainer = styled.div`
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(0, 0, 0, 0.5);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -53,7 +53,8 @@ const Modal = ({ children, onClose }: ModalProps) => {
   return (
     <ModalContainer>
       <div css={modalStyles}>
-        <button onClick={onClose}>x</button>
+        <XCircleIcon onClick={onClose} width={'1.5rem'} height={'1.5re'} />
+
         {children}
       </div>
     </ModalContainer>

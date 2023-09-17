@@ -14,9 +14,10 @@ import { gql, useLazyQuery, useMutation } from '@apollo/client';
 import { useState } from 'react';
 import { DELETE_BY_PK } from '../../graphql/mutation';
 import { useContext } from 'react';
-import { loadFromLocalStorage, saveToLocalStorage } from '../../utils/localStorage';
+import { removeFromLocalStorageById, saveToLocalStorage } from '../../utils/localStorage';
 import { ToastNotificationsContext } from 'cherry-components';
-// import { GET_CONTACT_QUERY } from '../../graphql/query';
+import Modal from '../elements/modal/Modal';
+// import { contactDataVar } from '../../utils/graphql';
 
 const SEARCH_BY_NAME = gql`
   query GetContactList($where: contact_bool_exp, $order_by: [contact_order_by!]) {
@@ -53,32 +54,33 @@ const List = (props: IProps) => {
   let displayData: IContact[];
   const { addNotification } = useContext(ToastNotificationsContext);
 
+  // reactive-var
+  // const consumedData = useReactiveVar(contactDataVar);
+
   const title: string = props.listTitle;
   const currPage: number = props.currentPage;
   const totalOfPage: number = props.totalPage;
+
+  const [modalActive, setModalActive] = useState(false);
 
   const [searchVal, setsearchVal] = useState<string>('');
   const [searchContacts, { data: searchResults }] = useLazyQuery(SEARCH_BY_NAME, {
     fetchPolicy: 'network-only',
   });
   const [deleteContact, { loading }] = useMutation(DELETE_BY_PK, {
-    // refetchQueries: [{ query: GET_CONTACT_QUERY }],
     onCompleted: (data) => {
       if (data && data.delete_contact_by_pk) {
         const updatedData = displayData.filter((contact: any) => contact.id !== data.delete_contact_by_pk.id);
         displayData = updatedData;
 
-        const updatedLocalStorageData = loadFromLocalStorage('normalContacts') || [];
-        const filteredLocalStorageData = updatedLocalStorageData.filter(
-          (contact: any) => contact.id !== data.delete_contact_by_pk.id
-        );
-
+        const filteredLocalStorageData = removeFromLocalStorageById('normalContacts', data.delete_contact_by_pk.id);
         saveToLocalStorage('normalContacts', filteredLocalStorageData);
+        addNotification('Contact Deleted', {
+          color: 'error',
+          autoHide: 3500,
+        });
       }
-      addNotification('Contact Deleted', {
-        color: 'error',
-        autoHide: 3500,
-      });
+      setModalActive(false);
     },
   });
 
@@ -137,7 +139,13 @@ const List = (props: IProps) => {
       <div css={listStyle.wrapper}>
         {displayData.map((item: any, index: number) => {
           return (
-            <div css={{ position: 'relative' }} key={index}>
+            <div
+              css={{
+                position: 'relative',
+                marginBottom: '0.75rem',
+              }}
+              key={index}
+            >
               <Link to={`/contact/${item.id}`} css={listStyle.elementList}>
                 <Button
                   height="60px"
@@ -149,7 +157,7 @@ const List = (props: IProps) => {
                   <div css={{ display: 'flex', alignItems: 'center' }}>
                     <UserCircleIcon css={{ width: '3rem', height: '3rem' }} />
                     <div css={listStyle.content}>
-                      <span css={{ fontSize: '1rem', fontWeight: 'bold' }}>
+                      <span css={{ fontSize: '1rem', fontWeight: 'bold', maxWidth: '200px' }}>
                         {item.first_name + ' ' + item.last_name}
                       </span>
                       <span
@@ -160,15 +168,12 @@ const List = (props: IProps) => {
                       >
                         <span css={{ fontWeight: 'bold', color: 'grey' }}>Primary:</span>{' '}
                         <span css={{ color: 'grey' }}> +{item.phones[0].number}</span>
-                        {/* {item.phones.map((childItem: any, index: number) => {
-                          return <span key={index}>{childItem.number}; </span>;
-                        })} */}
                       </span>
                     </div>
                   </div>
                 </Button>
               </Link>
-              <div css={{ position: 'absolute', display: 'flex', right: '0', top: '7px' }}>
+              <div css={{ position: 'absolute', display: 'flex', right: '0', top: '25%' }}>
                 <button
                   onClick={() => props.toggleFav(item.id)}
                   css={{ marginRight: '1rem', border: 'none', backgroundColor: 'transparent' }}
@@ -179,13 +184,38 @@ const List = (props: IProps) => {
                     <OutlineStarIcon color={theme.colors.grayDark} width={'1.5rem'} height={'1.5rem'} />
                   )}
                 </button>
-                <button
-                  onClick={() => deleteContact({ variables: { id: item.id } })}
-                  css={{ marginRight: '1rem', backgroundColor: 'transparent', border: 'none' }}
-                  disabled={loading}
-                >
-                  <TrashIcon color={theme.colors.error} width={'1.5rem'} height={'1.5rem'} />
-                </button>
+
+                {modalActive ? (
+                  <Modal
+                    onClose={() => {
+                      setModalActive(false);
+                    }}
+                  >
+                    <div>
+                      <h2>Delete this contact?</h2>
+                      <div>
+                        <button
+                          onClick={() => {
+                            deleteContact({ variables: { id: item.id } });
+                          }}
+                        >
+                          Delete
+                        </button>
+                        <button>Cancel</button>
+                      </div>
+                    </div>
+                  </Modal>
+                ) : (
+                  <button
+                    onClick={() => {
+                      setModalActive(true);
+                    }}
+                    css={{ marginRight: '1rem', backgroundColor: 'transparent', border: 'none' }}
+                    disabled={loading}
+                  >
+                    <TrashIcon color={theme.colors.error} width={'1.5rem'} height={'1.5rem'} />
+                  </button>
+                )}
               </div>
             </div>
           );

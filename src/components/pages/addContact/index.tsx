@@ -54,6 +54,7 @@ const AddContact = ({ onClose }: Props) => {
       setFirstName('');
       setLastName('');
       setphoneNumberInput(['']);
+      onClose;
     } catch (error) {
       if (error) {
         addNotification(`${error}`, {
@@ -81,7 +82,6 @@ const AddContact = ({ onClose }: Props) => {
 
   const handleTogglePhoneInput = () => {
     setExpandInputNumber(!expandInputNumber);
-    onClose;
   };
 
   return (
