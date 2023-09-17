@@ -16,6 +16,7 @@ const listStyle = {
   elementList: css({
     display: 'grid',
     gridColumn: '1',
+    listStyle: 'none',
   }),
   topSection: css({
     position: 'relative',

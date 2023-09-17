@@ -24,9 +24,10 @@ const ModalContainer = styled.div`
 interface ModalProps {
   children: React.ReactNode;
   onClose: () => void;
+  title?: string;
 }
 
-const Modal = ({ children, onClose }: ModalProps) => {
+const Modal = ({ children, onClose, title }: ModalProps) => {
   useEffect(() => {
     // Add event listeners for "Escape" key press and clicks outside the modal
     const handleEscKey = (event: KeyboardEvent) => {
@@ -53,8 +54,10 @@ const Modal = ({ children, onClose }: ModalProps) => {
   return (
     <ModalContainer>
       <div css={modalStyles}>
-        <XCircleIcon onClick={onClose} width={'1.5rem'} height={'1.5re'} />
-
+        <div css={{ display: 'flex', alignItems: 'center' }}>
+          <XCircleIcon onClick={onClose} width={'1.5rem'} height={'1.5rem'} />
+          <h3 css={{ left: '20%' }}>{title}</h3>
+        </div>
         {children}
       </div>
     </ModalContainer>

@@ -14,7 +14,6 @@ import { gql, useLazyQuery, useMutation } from '@apollo/client';
 import { useState } from 'react';
 import { DELETE_BY_PK } from '../../graphql/mutation';
 import { useContext } from 'react';
-import { removeFromLocalStorageById, saveToLocalStorage } from '../../utils/localStorage';
 import { ToastNotificationsContext } from 'cherry-components';
 import Modal from '../elements/modal/Modal';
 // import { contactDataVar } from '../../utils/graphql';
@@ -73,8 +72,6 @@ const List = (props: IProps) => {
         const updatedData = displayData.filter((contact: any) => contact.id !== data.delete_contact_by_pk.id);
         displayData = updatedData;
 
-        const filteredLocalStorageData = removeFromLocalStorageById('normalContacts', data.delete_contact_by_pk.id);
-        saveToLocalStorage('normalContacts', filteredLocalStorageData);
         addNotification('Contact Deleted', {
           color: 'error',
           autoHide: 3500,
@@ -193,15 +190,37 @@ const List = (props: IProps) => {
                   >
                     <div>
                       <h2>Delete this contact?</h2>
-                      <div>
+                      <div css={{ display: 'flex', justifyContent: 'space-between' }}>
                         <button
+                          css={{
+                            backgroundColor: `${theme.colors.grayDark}`,
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '5px',
+                            height: '30px',
+                            fontWeight: 'bold',
+                          }}
+                          onClick={() => {
+                            setModalActive(false);
+                          }}
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          css={{
+                            backgroundColor: `${theme.colors.error}`,
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '5px',
+                            height: '30px',
+                            fontWeight: 'bold',
+                          }}
                           onClick={() => {
                             deleteContact({ variables: { id: item.id } });
                           }}
                         >
                           Delete
                         </button>
-                        <button>Cancel</button>
                       </div>
                     </div>
                   </Modal>

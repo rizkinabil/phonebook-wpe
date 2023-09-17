@@ -11,6 +11,7 @@ import { ADD_CONTACT_WITH_PHONE } from '../../../graphql/mutation';
 import { ToastNotificationsContext } from 'cherry-components';
 import Modal from '../../elements/modal/Modal';
 import { loadFromLocalStorage, saveToLocalStorage } from '../../../utils/localStorage';
+import { theme } from '../../../assets/style/theme';
 
 type Props = {
   onClose?: () => void;
@@ -20,7 +21,6 @@ const AddContact = ({ onClose }: Props) => {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [phoneNumberInput, setphoneNumberInput] = useState(['']);
-  const [expandInputNumber, setExpandInputNumber] = useState(false);
   const { addNotification } = useContext(ToastNotificationsContext);
 
   const [addContact] = useMutation(ADD_CONTACT_WITH_PHONE);
@@ -80,15 +80,11 @@ const AddContact = ({ onClose }: Props) => {
     setphoneNumberInput([...phoneNumberInput, '']);
   };
 
-  const handleTogglePhoneInput = () => {
-    setExpandInputNumber(!expandInputNumber);
-  };
-
   return (
-    <Modal onClose={handleClose}>
+    <Modal onClose={handleClose} title="Add Contact">
       <div css={formContactStyle.parent}>
         <div css={formContactStyle.user.header}>
-          <UserCircleIcon css={{ width: '7.25rem', height: '7.25rem' }} />
+          <UserCircleIcon css={{ width: '4.25rem', height: '4.25rem' }} />
         </div>
         <form onSubmit={handleFormSubmit} css={formContactStyle.user.form}>
           <input
@@ -96,15 +92,23 @@ const AddContact = ({ onClose }: Props) => {
             value={firstName}
             onChange={(e) => setFirstName(e.target.value)}
             placeholder="First Name"
-            css={{ marginBottom: '0.5rem' }}
+            css={{ marginBottom: '1rem' }}
           />
 
-          <input type="text" value={lastName} onChange={(e) => setLastName(e.target.value)} placeholder="Last Name" />
+          <input
+            type="text"
+            value={lastName}
+            onChange={(e) => setLastName(e.target.value)}
+            placeholder="Last Name"
+            css={{ marginBottom: '1.5rem' }}
+          />
           <div>
             {phoneNumberInput.map((item, index) => {
               return (
-                <div key={index}>
-                  <label htmlFor={`phoneNumber${index}`}>Phone Number {index + 1}</label>
+                <div key={index} css={{ display: 'grid' }}>
+                  <label htmlFor={`phoneNumber${index}`} css={{ fontSize: '12px', fontWeight: 'bold' }}>
+                    Phone Number {index + 1}
+                  </label>
                   <input
                     type="text"
                     id={`phoneNumber${index}`}
@@ -114,24 +118,23 @@ const AddContact = ({ onClose }: Props) => {
                 </div>
               );
             })}
-            {expandInputNumber ? (
-              <button type="button" onClick={handleTogglePhoneInput}>
-                Collapse Phone Input
-              </button>
-            ) : (
-              <button type="button" onClick={handleAddPhoneNumber}>
-                Add Phone Number
-              </button>
-            )}
+            <button type="button" onClick={handleAddPhoneNumber} css={{ margin: '1rem 0 3rem' }}>
+              +
+            </button>
           </div>
-          <div>
-            {!expandInputNumber && (
-              <button type="button" onClick={handleTogglePhoneInput}>
-                Expand Phone Input
-              </button>
-            )}
-          </div>
-          <button type="submit">add contact</button>
+          <button
+            type="submit"
+            css={{
+              backgroundColor: `${theme.colors.primary}`,
+              color: 'white',
+              border: 'none',
+              borderRadius: '25px',
+              height: '30px',
+              fontWeight: 'bold',
+            }}
+          >
+            Save
+          </button>
         </form>
       </div>
     </Modal>

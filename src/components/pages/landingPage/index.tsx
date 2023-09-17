@@ -21,8 +21,6 @@ interface IContact {
   phones: { number: string }[];
 }
 
-// type Props = {}
-
 const LandingPage = () => {
   const { data, loading, error } = useQuery(GET_CONTACT_QUERY, {
     variables: {
@@ -30,11 +28,10 @@ const LandingPage = () => {
         first_name: 'asc',
       },
     },
-    pollInterval: 5000,
+    pollInterval: 2000,
   });
 
   const [favorite, setFavorite] = useState(loadFromLocalStorage('favorites') || []);
-  const [normalContacts, setNormalContacts] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const errMessage = error?.message;
   const normalItemPerPage = 10;
@@ -92,21 +89,7 @@ const LandingPage = () => {
     }
   }, []);
 
-  useEffect(() => {
-    const storedNormalContacts = loadFromLocalStorage('normalContacts');
-    if (storedNormalContacts) {
-      setNormalContacts(storedNormalContacts);
-    }
-  }, [favorite, currentPage]);
-
-  useEffect(() => {
-    if (data) {
-      // Save the normal contacts to local storage
-      saveToLocalStorage('normalContacts', data.contact);
-    }
-  }, [data]);
-
-  const sortedData = normalContacts ? sortContacts(normalContacts, favorite, currentPage, normalItemPerPage) : [];
+  const sortedData = data ? sortContacts(data.contact, favorite, currentPage, normalItemPerPage) : [];
   // const consumedData = updateContactData(sortedData);
 
   return (

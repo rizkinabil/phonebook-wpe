@@ -66,10 +66,19 @@ const DetailContact = () => {
         [field]: phonesArray as any,
       }));
     } else {
-      setUpdatedData((prevDataContact) => ({
-        ...prevDataContact,
-        [field]: value,
-      }));
+      const trimValue = value.trim();
+      if (trimValue === '') {
+        setUpdatedData((prevDataContact) => ({
+          ...prevDataContact,
+          [field]: (updatedData as any)[field],
+        }));
+      } else {
+        // Otherwise, update the field with the sanitized value
+        setUpdatedData((prevDataContact) => ({
+          ...prevDataContact,
+          [field]: trimValue,
+        }));
+      }
     }
   };
 

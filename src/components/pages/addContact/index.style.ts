@@ -12,12 +12,10 @@ const formContactStyle = {
   user: {
     header: css({
       textAlign: 'center',
-      border: 'solid black 1px',
     }),
     form: css({
       display: 'grid',
       gridColumn: '1',
-      margin: '1rem auto',
     }),
   },
 };
