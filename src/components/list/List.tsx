@@ -10,62 +10,57 @@ import {
   BackwardIcon,
 } from '@heroicons/react/24/solid';
 import { StarIcon as OutlineStarIcon } from '@heroicons/react/24/outline';
-import { gql, useLazyQuery, useMutation } from '@apollo/client';
-import { useState } from 'react';
+import { useLazyQuery, useMutation, useQuery } from '@apollo/client';
+import { useEffect, useState } from 'react';
 import { DELETE_BY_PK } from '../../graphql/mutation';
 import { useContext } from 'react';
 import { ToastNotificationsContext } from 'cherry-components';
 import Modal from '../elements/modal/Modal';
-// import { contactDataVar } from '../../utils/graphql';
+import { IContact, sortContacts } from '../../utils/sortContacts';
+import { GET_CONTACT_QUERY, SEARCH_BY_NAME } from '../../graphql/query';
+import { loadFromLocalStorage, saveToLocalStorage } from '../../utils/localStorage';
 
-const SEARCH_BY_NAME = gql`
-  query GetContactList($where: contact_bool_exp, $order_by: [contact_order_by!]) {
-    contact(where: $where, order_by: $order_by) {
-      created_at
-      first_name
-      id
-      last_name
-      phones {
-        number
-      }
-    }
-  }
-`;
-
-interface IProps {
-  listTitle: string;
-  datas: any;
-  favorite: string[];
-  toggleFav: (contactId: string) => void;
-  currentPage: number;
-  totalPage: number;
-  navToPage: (page: number) => void;
-}
-
-interface IContact {
-  id: string;
-  first_name: string;
-  last_name: string;
-  phones: { number: string }[];
-}
-
-const List = (props: IProps) => {
+const List = () => {
   let displayData: IContact[];
   const { addNotification } = useContext(ToastNotificationsContext);
 
-  // reactive-var
-  // const consumedData = useReactiveVar(contactDataVar);
-
-  const title: string = props.listTitle;
-  const currPage: number = props.currentPage;
-  const totalOfPage: number = props.totalPage;
-
-  const [modalActive, setModalActive] = useState(false);
-
+  const [favorite, setFavorite] = useState(loadFromLocalStorage('favorites') || []);
+  const [currentPage, setCurrentPage] = useState(1);
   const [searchVal, setsearchVal] = useState<string>('');
-  const [searchContacts, { data: searchResults }] = useLazyQuery(SEARCH_BY_NAME, {
-    fetchPolicy: 'network-only',
+  const [modalActive, setModalActive] = useState(false);
+  useEffect(() => {
+    const storedFav = loadFromLocalStorage('favorites');
+    if (storedFav) {
+      setFavorite(storedFav);
+    }
+  }, []);
+
+  const { data } = useQuery(GET_CONTACT_QUERY, {
+    variables: {
+      order_by: {
+        first_name: 'asc',
+      },
+    },
+    pollInterval: 2000,
   });
+
+  // custom pagination
+  const normalItemPerPage = 10;
+  const totalNormalItem = data ? data.contact.length - favorite.length : 0;
+  const totalPage = Math.ceil(totalNormalItem / normalItemPerPage);
+
+  const startIndex = (currentPage - 1) * normalItemPerPage;
+  const endIndex = startIndex + normalItemPerPage;
+
+  const navToPage = (page: number) => {
+    if (page >= 1 && page <= totalPage) {
+      setCurrentPage(page);
+    }
+  };
+
+  displayData = data ? sortContacts(data.contact, favorite, startIndex, endIndex) : [];
+
+  const [searchContacts, { data: searchResults }] = useLazyQuery(SEARCH_BY_NAME);
   const [deleteContact, { loading }] = useMutation(DELETE_BY_PK, {
     onCompleted: (data) => {
       if (data && data.delete_contact_by_pk) {
@@ -81,26 +76,14 @@ const List = (props: IProps) => {
     },
   });
 
-  if (searchResults && searchResults.contact) {
-    displayData = searchResults.contact;
-  } else {
-    displayData = props.datas;
-  }
+  const toggleFav = (contactId: string): void => {
+    const updatedFav: string[] = favorite.includes(contactId)
+      ? favorite.filter((id: string) => id !== contactId)
+      : [...favorite, contactId];
 
-  // Sort data to display fav first
-  displayData.sort((contactA: any, contactB: any) => {
-    const isFavoriteA = props.favorite.includes(contactA.id);
-    const isFavoriteB = props.favorite.includes(contactB.id);
-    if (isFavoriteA && !isFavoriteB) {
-      return -1;
-    }
-    if (!isFavoriteA && isFavoriteB) {
-      return 1;
-    }
-    return contactA.first_name.localeCompare(contactB.first_name);
-  });
-
-  // console.log(displayData);
+    setFavorite(updatedFav);
+    saveToLocalStorage('favorites', updatedFav);
+  };
 
   const handleSearchInputChange = (event: React.ChangeEvent<HTMLInputElement>): void => {
     const value = event.target.value;
@@ -108,7 +91,7 @@ const List = (props: IProps) => {
     event.preventDefault();
 
     if (value.trim() === '') {
-      searchContacts({ variables: { where: {} } });
+      searchContacts({ variables: { order_by: { first_name: 'asc' }, where: {} } });
     } else {
       searchContacts({
         variables: {
@@ -123,12 +106,16 @@ const List = (props: IProps) => {
     }
   };
 
-  // const displayData = searchResults ? searchResults.contact : props.datas;
+  if (searchResults && searchResults.contact) {
+    displayData = searchResults.contact ? sortContacts(searchResults.contact, favorite, startIndex, endIndex) : [];
+  } else {
+    displayData = data ? sortContacts(data.contact, favorite, startIndex, endIndex) : [];
+  }
 
   return (
     <>
       <div css={listStyle.topSection}>
-        <h3>{title}</h3>
+        <h3>List Contact</h3>
         <div css={{ float: 'right', position: 'absolute', right: '0' }}>
           <input type="text" value={searchVal} onChange={handleSearchInputChange} placeholder="find people" />
         </div>
@@ -172,10 +159,10 @@ const List = (props: IProps) => {
               </Link>
               <div css={{ position: 'absolute', display: 'flex', right: '0', top: '25%' }}>
                 <button
-                  onClick={() => props.toggleFav(item.id)}
+                  onClick={() => toggleFav(item.id)}
                   css={{ marginRight: '1rem', border: 'none', backgroundColor: 'transparent' }}
                 >
-                  {props.favorite.includes(item.id) ? (
+                  {favorite.includes(item.id) ? (
                     <SolidStarIcon color={theme.colors.warning} width={'1.5rem'} height={'1.5rem'} />
                   ) : (
                     <OutlineStarIcon color={theme.colors.grayDark} width={'1.5rem'} height={'1.5rem'} />
@@ -242,13 +229,13 @@ const List = (props: IProps) => {
       </div>
       <div css={listStyle.pagination}>
         <span>
-          Showing <span>{currPage}</span> to <span>{totalOfPage}</span> of <span>Entries</span>
+          Showing <span>{currentPage}</span> to <span>{totalPage}</span> of <span>Entries</span>
         </span>
         <div>
-          <button onClick={() => props.navToPage(currPage - 1)} disabled={currPage === 1} css={{ marginRight: '1rem' }}>
+          <button onClick={() => navToPage(currentPage - 1)} disabled={currentPage === 1} css={{ marginRight: '1rem' }}>
             <BackwardIcon width={'1rem'} height={'1rem'} />
           </button>
-          <button onClick={() => props.navToPage(currPage + 1)} disabled={currPage === totalOfPage}>
+          <button onClick={() => navToPage(currentPage + 1)} disabled={currentPage === totalPage}>
             <ForwardIcon width={'1rem'} height={'1rem'} />
           </button>
         </div>

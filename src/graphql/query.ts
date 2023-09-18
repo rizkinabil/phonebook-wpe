@@ -41,3 +41,17 @@ export const GET_CONTACT_DETAIL = gql`
     }
   }
 `;
+
+export const SEARCH_BY_NAME = gql`
+  query GetContactList($where: contact_bool_exp, $order_by: [contact_order_by!]) {
+    contact(where: $where, order_by: $order_by) {
+      created_at
+      first_name
+      id
+      last_name
+      phones {
+        number
+      }
+    }
+  }
+`;

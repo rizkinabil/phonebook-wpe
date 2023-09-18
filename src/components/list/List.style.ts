@@ -4,7 +4,6 @@ import { theme } from '../../assets/style/theme';
 
 const listStyle = {
   wrapper: css({
-    marginTop: '1rem',
     height: '20rem',
     overflowY: 'scroll',
     scrollbarColor: `${theme.colors.grayLight}`,
@@ -22,7 +21,7 @@ const listStyle = {
     position: 'relative',
     display: 'flex',
     alignItems: 'center',
-    marginTop: '2rem',
+    margin: '1rem auto 0.5rem',
   }),
   content: css({
     display: 'grid',

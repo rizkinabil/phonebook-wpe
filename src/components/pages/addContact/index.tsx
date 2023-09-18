@@ -10,7 +10,6 @@ import { useMutation } from '@apollo/client';
 import { ADD_CONTACT_WITH_PHONE } from '../../../graphql/mutation';
 import { ToastNotificationsContext } from 'cherry-components';
 import Modal from '../../elements/modal/Modal';
-import { loadFromLocalStorage, saveToLocalStorage } from '../../../utils/localStorage';
 import { theme } from '../../../assets/style/theme';
 
 type Props = {
@@ -29,7 +28,7 @@ const AddContact = ({ onClose }: Props) => {
     e.preventDefault();
     try {
       // get data from query
-      const { data } = await addContact({
+      await addContact({
         variables: {
           first_name: firstName,
           last_name: lastName,
@@ -38,13 +37,6 @@ const AddContact = ({ onClose }: Props) => {
           }),
         },
       });
-      // check eksisting, pass to localstorage
-      if (data && data.addContact) {
-        const updatedData = {
-          contact: [...(loadFromLocalStorage('normalContacts') || []), data.addContact],
-        };
-        saveToLocalStorage('normalContacts', updatedData.contact);
-      }
 
       addNotification('Success add contact', {
         color: 'success',
@@ -54,7 +46,7 @@ const AddContact = ({ onClose }: Props) => {
       setFirstName('');
       setLastName('');
       setphoneNumberInput(['']);
-      onClose;
+      handleClose();
     } catch (error) {
       if (error) {
         addNotification(`${error}`, {
